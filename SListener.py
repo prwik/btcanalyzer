@@ -57,4 +57,4 @@ class SListener(StreamListener):
     def on_timeout(self):
         sys.stderr.write("Timeout, sleeping for 60 seconds...\n")
         time.sleep(60)
-        return 
+        return
