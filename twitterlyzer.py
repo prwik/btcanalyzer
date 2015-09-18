@@ -12,25 +12,9 @@ def main():
 
     (options, args) = parser.parse_args()
 
-    ta = Twitterlyzer(options.filename, 'sentiments.csv', 'output.csv')
-    print(ta.tweets)
+    ta = Twitterlyzer(options.filename, 'sentiments.csv', args)
 
 
-
-    filterString = args
-    if not filterString:
-        filterString = ["bitcoin", "Bitcoin", "crypto-currency", "blockchain"]
-    
-
-
-    OutputFilter = ''
-    for var in filterString:
-        OutputFilter += ' ' + var
-
-    #print("Showing all new tweets for:" + OutputFilter + "\n")
-
-    #stream = tweepy.Stream(auth, l)
-    #stream.filter(track=filterString)
 class Twitterlyzer(object):
     # Consumer keys and access tokens, used for OAuth
     consumer_key = '9IgePYjgkXvWBYjFBtu3DRg0X'
@@ -38,17 +22,23 @@ class Twitterlyzer(object):
     access_token = '1670954952-e2DejjpVFzN5OPXvzltJ6cos0gseRZYfrekDhhM'
     access_token_secret = 'mP9CgwEWXc8ByiFZkXj1Pv36K2ofz9DngfMRLaMFio3BG'
 
-    def __init__(self, tweet_file, sentiments_file, output_file):
-        self.tweets = self.load_tweets(tweet_file)
-        self.sentiments = self.load_sentiments(sentiments_file)
-        self.output_file = output_file
+    def __init__(self, tweet_file, sentiments_file, filter_string):
+        if tweet_file:
+            self.tweets = self.load_tweets(tweet_file)
+        if sentiments_file:
+            self.sentiments = self.load_sentiments(sentiments_file)
+        if filter_string:
+            self.stream = self.initialize_slistener(filter_string)
+        else:
+            print("Error: Please provide some arguments.")
 
-    def initialize_slistener():
-        auth = tweepy.OAuthHandler(consumer_key, consumer_secret)
-        auth.set_access_token(access_token, access_token_secret)
+    def initialize_slistener(self, filter_string):
+        auth = tweepy.OAuthHandler(self.consumer_key, self.consumer_secret)
+        auth.set_access_token(self.access_token, self.access_token_secret)
         api = tweepy.API(auth)
         l = SListener(api, filterString[0])
-
+        stream = tweepy.Stream(auth, l)
+        stream.filter(track=filterString)
 
     def byteify(self, input):
         if isinstance(input, dict):
@@ -77,14 +67,18 @@ class Twitterlyzer(object):
         else:
             return averageSentiment / wordCount
 
-    def generateSentimentList(self):
+    def generate_sentiment_list(self):
         tweetsSentiment = []
 
-        for i in range(len(tweets)):
-            tweetsSentiment.append(((self.tweets[i]['created_at'], self.tweet_sentiment(extract_text(tweets[i]), sentiments))))
+        for i in range(len(self.tweets)):
+            tweetsSentiment.append(((self.tweets[i]['created_at'], self.tweet_sentiment(self.extract_text(self.tweets[i]), self.sentiments))))
         return tweetsSentiment
+    
+    def stream_sentiment(self, data):
+        return tweet_sentiment(self.byteify(json.loads(line)), self.sentiments)
 
     def load_tweets(self, file_name=None):
+        """Loads tweet from json file to python dictionary"""
         tweets = {}
         tweet_id = 0
         line_number = 0
@@ -95,7 +89,7 @@ class Twitterlyzer(object):
             line_number += 1
         return tweets
 
-    def load_sentiments(self, file_name="sentiments.csv"):
+    def load_sentiments(self, file_name):
         """Read the sentiment file and return a dictionary containing the sentiment
         score of each word, a value from -1 to +1.
         """
@@ -106,6 +100,7 @@ class Twitterlyzer(object):
         return sentiments
 
     def create_csv(self, tweet_list, filename):
+        """Create CSV file from tweet list and average sentiments for each tweet"""
         csv_file = open(filename, 'w')
         for item in tweet_list:
             time, text = item

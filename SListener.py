@@ -1,20 +1,22 @@
 import json, time, sys
 from tweepy import StreamListener
 
-DATA_PATH = "data/"
-
 class SListener(tweepy.StreamListener):
 
-    def __init__(self, api = None, fprefix = 'streamer'):
+    #DATA_PATH = "data/"
+
+    def __init__(self, api = None, fprefix = 'streamer', twitterlyzer = None):
         self.api = api or API()
         self.counter = 0
         self.fprefix = fprefix
-        self.output  = open(DATA_PATH + fprefix + '.' 
+        self.output  = open(self.DATA_PATH + fprefix + '.' 
                             + time.strftime('%Y%m%d-%H%M%S') + '.json', 'w')
-        self.delout  = open(DATA_PATH + 'delete.txt', 'a')
+        self.delout  = open(self.DATA_PATH + 'delete.txt', 'a')
+        self.twitterlyzer = twitterlyzer
 
     def on_data(self, data):
         self.print_data(data)
+        self.twitterlyzer.stream_sentiment(data)
 
         if  'in_reply_to_status' in data:
             self.on_status(data)
