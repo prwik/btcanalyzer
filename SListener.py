@@ -1,22 +1,43 @@
-import json, time, sys
-from tweepy import StreamListener
+import json, time, sys, os
+import tweepy
 
-class SListener(tweepy.StreamListener):
+class Fiona(tweepy.StreamListener):
 
-    #DATA_PATH = "data/"
+    consumer_key = '9IgePYjgkXvWBYjFBtu3DRg0X'
+    consumer_secret = '8yArPE8GxBKhcwZcvL8Kw2MNfCRgSqDJfx7yiFyRyVAsrAj9zQ'
+    access_token = '1670954952-e2DejjpVFzN5OPXvzltJ6cos0gseRZYfrekDhhM'
+    access_token_secret = 'mP9CgwEWXc8ByiFZkXj1Pv36K2ofz9DngfMRLaMFio3BG'
+    auth = tweepy.OAuthHandler(consumer_key, consumer_secret).set_access_token(access_token,
+                                    access_token_secret)
 
-    def __init__(self, api = None, fprefix = 'streamer', twitterlyzer = None):
-        self.api = api or API()
+    def __init__(self, options, args):
+
+        self.api = self.generate_api() or API()
         self.counter = 0
-        self.fprefix = fprefix
-        self.output  = open(self.DATA_PATH + fprefix + '.' 
-                            + time.strftime('%Y%m%d-%H%M%S') + '.json', 'w')
-        self.delout  = open(self.DATA_PATH + 'delete.txt', 'a')
-        self.twitterlyzer = twitterlyzer
+        self.fprefix = options.filename
+        self.output  = open(filename + '.' 
+                         + time.strftime('%Y%m%d-%H%M%S') + '.json', 'w')
+        self.delout  = open('delete.txt', 'a')
+        self.stream = tweepy.Stream(auth, l)
+        stream.filter(track=args)
+
+        if options.tweets and options.sentiments and options.output:
+            self.tweets = self.load_tweets(options.tweets)
+            self.sentiments = self.load_sentiments(options.sentiments)
+            self.output = options.output
+            self.create_csv(self.generate_sentiment_list())
+        else:
+            print("Please provide a option or argument(s) to run the application, see -h --help.")
+
+    def generate_api():
+        api = tweepy.API(self.auth, host='api.twitter.com', search_host='search.twitter.com',
+                    cache=None, api_root='/1', search_root='', retry_count=3, retry_delay=10,
+                    retry_errors=None, timeout=240)
+        return api
 
     def on_data(self, data):
         self.print_data(data)
-        self.twitterlyzer.stream_sentiment(data)
+
 
         if  'in_reply_to_status' in data:
             self.on_status(data)
