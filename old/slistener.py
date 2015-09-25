@@ -7,36 +7,23 @@ class Listener(tweepy.StreamListener):
     consumer_secret = '8yArPE8GxBKhcwZcvL8Kw2MNfCRgSqDJfx7yiFyRyVAsrAj9zQ'
     access_token = '1670954952-e2DejjpVFzN5OPXvzltJ6cos0gseRZYfrekDhhM'
     access_token_secret = 'mP9CgwEWXc8ByiFZkXj1Pv36K2ofz9DngfMRLaMFio3BG'
-    auth = tweepy.OAuthHandler(consumer_key, consumer_secret)
-    auth.set_access_token(access_token, access_token_secret)
-    api = tweepy.API(auth_handler=auth, retry_count=3, retry_delay=10, timeout=240)
+    auth = tweepy.OAuthHandler(consumer_key, consumer_secret).set_access_token(access_token,
+                                    access_token_secret)
 
     def __init__(self, options, args):
 
-
+        self.api = self.generate_api() or API()
         self.counter = 0
-        if options.filename:
-            self.fprefix = options.filename
-            self.output  = open(self.fprefix + '.' 
+        self.fprefix = options.filename
+        self.output  = open(filename + '.' 
                          + time.strftime('%Y%m%d-%H%M%S') + '.json', 'w')
-            self.delout  = open('delete.txt', 'a')
+        self.delout  = open('delete.txt', 'a')
 
-    #        try:
-    #            self.tweets = self.load_tweets(options.tweets)
-    #        except BaseException, e:
-    #            print(e)
-    #        try:
-    #            self.sentiments = self.load_sentiments(options.sentiments)
-    #        except BaseException, e:
-    #            print(e)
-    #        try:
-    #            self.output = options.output
-    #        except BaseException, e:
-    #                    print(e)
-
-            #self.create_csv(self.generate_sentiment_list())
-
-    #            print("Please provide a option or argument(s) to run the application, see -h --help.")
+    def generate_api():
+        api = tweepy.API(self.auth, host='api.twitter.com', search_host='search.twitter.com',
+                    cache=None, api_root='/1', search_root='', retry_count=3, retry_delay=10,
+                    retry_errors=None, timeout=240)
+        return api
 
     def on_data(self, data):
         self.print_data(data)

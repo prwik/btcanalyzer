@@ -1,12 +1,14 @@
 import sys, os, tweepy, time, json
 from optparse import OptionParser
-from Fiona import Fiona
+from listener import Listener
+from analyzer import Analyzer
+
 os.chdir('data')
 
 def main():
     # Input parser
     parser = OptionParser()
-    parser.add_option("-f", "--file", dest="filename",
+    parser.add_option("-f", "--outputfile", dest="filename",
                   help="filter for key words", metavar="FILE")
     parser.add_option("-t", "--tweets", dest="tweets",
                   help="tweets file", metavar="FILE")
@@ -21,15 +23,9 @@ def main():
     (options, args) = parser.parse_args()
     li = Listener(options, args)
 
-    consumer_key = '9IgePYjgkXvWBYjFBtu3DRg0X'
-    consumer_secret = '8yArPE8GxBKhcwZcvL8Kw2MNfCRgSqDJfx7yiFyRyVAsrAj9zQ'
-    access_token = '1670954952-e2DejjpVFzN5OPXvzltJ6cos0gseRZYfrekDhhM'
-    access_token_secret = 'mP9CgwEWXc8ByiFZkXj1Pv36K2ofz9DngfMRLaMFio3BG'
-    auth = tweepy.OAuthHandler(consumer_key, consumer_secret)
-    auth.set_access_token(access_token, access_token_secret)
-    #api = tweepy.API(auth=auth, retry_count=3, retry_delay=10, timeout=240)
 
-    stream = tweepy.Stream(auth=auth, listener=li)
+
+    stream = tweepy.Stream(auth=li.auth, listener=li)
     stream.filter(track=args)
 
 if __name__ == '__main__':
