@@ -1,7 +1,7 @@
 import json, time, sys, os
 import tweepy
 
-class Fiona(tweepy.StreamListener):
+class Listener(tweepy.StreamListener):
 
     def __init__(self, options, args):
 
@@ -13,13 +13,22 @@ class Fiona(tweepy.StreamListener):
                          + time.strftime('%Y%m%d-%H%M%S') + '.json', 'w')
             self.delout  = open('delete.txt', 'a')
 
-        if options.tweets and options.sentiments and options.output:
+        try:
             self.tweets = self.load_tweets(options.tweets)
+        except:
+            raise Exception
+        try:
             self.sentiments = self.load_sentiments(options.sentiments)
+        except:
+            raise Exception
+        try:
             self.output = options.output
+        except:
+            raise Exception
+
             self.create_csv(self.generate_sentiment_list())
-        else:
-            print("Please provide a option or argument(s) to run the application, see -h --help.")
+
+#            print("Please provide a option or argument(s) to run the application, see -h --help.")
 
     def on_data(self, data):
         self.print_data(data)
