@@ -1,13 +1,15 @@
+import json
 
 class Analyzer():
 
-    def __init__(self, tweets_file, sentiments_file, output_file):
-        self.tweets = load_tweets(tweets_file)
-        self.sentiments_file = load_sentiments(sentiments_file)
-        self.output_file = output_file
+    def __init__(self, options, args):
+        self.tweets = self.load_tweets(args[1])
+        self.sentiments = self.load_sentiments(args[2])
+        self.output_file = options.sentiments
+        self.tweets_sentiment = self.generate_sentiment_list()
 
+    ### Removes Unicode formatting from raw data. ###
 
-    ### Remove Unicode formatting from raw data
     def byteify(self, input):
         if isinstance(input, dict):
             return {self.byteify(key):self.byteify(value) for key,value in input.iteritems()}
@@ -35,17 +37,6 @@ class Analyzer():
         else:
             return averageSentiment / wordCount
 
-    def generate_sentiment_list(self):
-        tweets_sentiment = []
-
-        for i in range(len(self.tweets)):
-            tweets_sentiment.append(((self.tweets[i]['created_at'],
-                    self.tweet_sentiment(self.extract_text(self.tweets[i]), self.sentiments))))
-        return tweets_sentiment
-    
-#   def stream_sentiment(self, data):
-#      return tweet_sentiment(self.byteify(json.loads(line)), self.sentiments)
-
     def load_tweets(self, file_name):
 
         tweets = {}
@@ -72,3 +63,40 @@ class Analyzer():
         for item in tweet_list:
             time, text = item
             csv_file.write(str(time) + ',' + str(text) + '\n')
+
+    def generate_sentiment_list(self):
+        tweets_sentiment = []
+
+        for i in range(len(self.tweets)):
+            tweets_sentiment.append(((self.tweets[i]['created_at'],
+                    self.tweet_sentiment(self.extract_text(self.tweets[i]), self.sentiments))))
+        return tweets_sentiment
+
+        ### PUBLIC METHODS ###
+    def print_average_sentiment(self):
+        sumVar = 0
+
+        for (time, sentiment) in self.tweets_sentiment:
+            sumVar += sentiment
+        print(sumVar / len(self.tweets_sentiment))
+
+    def print_duplicate_post_number(self):
+        tweetList = []
+        count = 0
+        totalCount = 0
+
+        for tweetId in self.tweets:
+            tweetList.append(self.tweets[tweetId]['text'])
+
+        for tweet in tweetList:
+            count = tweetList.count(tweet)
+            if count > 1:
+                totalCount += 1
+                print(tweet)
+
+        print(totalCount)
+
+
+
+
+

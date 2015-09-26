@@ -11,32 +11,17 @@ class Listener(tweepy.StreamListener):
     auth.set_access_token(access_token, access_token_secret)
     api = tweepy.API(auth_handler=auth, retry_count=3, retry_delay=10, timeout=240)
 
-    def __init__(self, options, args):
-
+    def __init__(self, options):
 
         self.counter = 0
-        if options.filename:
-            self.fprefix = options.filename
-            self.output  = open(self.fprefix + '.' 
+        if options.streamFile:
+            self.fprefix = options.streamFile
+        else:
+            self.fprefix = "streamoutput"
+
+        self.output  = open(self.fprefix + '.' 
                          + time.strftime('%Y%m%d-%H%M%S') + '.json', 'w')
-            self.delout  = open('delete.txt', 'a')
-
-    #        try:
-    #            self.tweets = self.load_tweets(options.tweets)
-    #        except BaseException, e:
-    #            print(e)
-    #        try:
-    #            self.sentiments = self.load_sentiments(options.sentiments)
-    #        except BaseException, e:
-    #            print(e)
-    #        try:
-    #            self.output = options.output
-    #        except BaseException, e:
-    #                    print(e)
-
-            #self.create_csv(self.generate_sentiment_list())
-
-    #            print("Please provide a option or argument(s) to run the application, see -h --help.")
+        self.delout  = open('delete.txt', 'a')
 
     def on_data(self, data):
         self.print_data(data)
