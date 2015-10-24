@@ -1,16 +1,19 @@
 import json
 
+
 class Analyzer():
+
 
     def __init__(self, options, args):
         self.tweets = self.load_tweets(args[1])
         self.sentiments = self.load_sentiments(args[2])
         self.output_file = options.sentiments
-        self.tweets_sentiment = self.generate_sentiment_list()
+        self.tweets_sentiment = self.generate_sentiment_list(self.tweets)
 
     ### Removes Unicode formatting from raw data. ###
 
     def byteify(self, input):
+
         if isinstance(input, dict):
             return {self.byteify(key):self.byteify(value) for key,value in input.iteritems()}
         elif isinstance(input, list):
@@ -21,9 +24,11 @@ class Analyzer():
             return input
 
     def extract_text(self, tweet):
+
         return tweet['text'].lower().split()
 
     def tweet_sentiment(self, tweet, sentiments):
+
         averageSentiment = False
         wordCount = 0
         keys = sentiments.keys()
@@ -64,23 +69,43 @@ class Analyzer():
             time, text = item
             csv_file.write(str(time) + ',' + str(text) + '\n')
 
-    def generate_sentiment_list(self):
+    def generate_sentiment_list(self, tweets):
+
         tweets_sentiment = []
 
-        for i in range(len(self.tweets)):
-            tweets_sentiment.append(((self.tweets[i]['created_at'],
-                    self.tweet_sentiment(self.extract_text(self.tweets[i]), self.sentiments))))
+        for i in range(len(tweets)):
+            tweets_sentiment.append(((tweets[i]['created_at'],
+                    self.tweet_sentiment(self.extract_text(tweets[i]), self.sentiments))))
         return tweets_sentiment
 
         ### PUBLIC METHODS ###
-    def print_average_sentiment(self):
-        sumVar = 0
+    def average_sentiment(self):
 
+        sumVar = 0
         for (time, sentiment) in self.tweets_sentiment:
             sumVar += sentiment
-        print(sumVar / len(self.tweets_sentiment))
+        return sumVar / len(self.tweets_sentiment)
 
-    def print_duplicate_post_number(self):
+    def filtered_sentiment(self):
+
+        seen = {}
+        unique = {}
+        i = 0
+        sumVar = 0
+        # I believe can be written as a dict comprehension oneliner
+        for key in self.tweets:
+            if self.tweets[key]['text'] not in seen.values():
+                unique[i] = self.tweets[key]
+                seen[i] = self.tweets[key]
+                i += 1
+        tweet_sentiment = self.generate_sentiment_list(unique)
+        print(tweet_sentiment)
+        for (time, sentiment) in tweet_sentiment:
+            sumVar += sentiment
+        return sumVar / len(tweet_sentiment)
+
+    def duplicate_post_number(self):
+
         tweetList = []
         count = 0
         totalCount = 0
@@ -92,9 +117,8 @@ class Analyzer():
             count = tweetList.count(tweet)
             if count > 1:
                 totalCount += 1
-                print(tweet)
 
-        print(totalCount)
+        return totalCount
 
 
 

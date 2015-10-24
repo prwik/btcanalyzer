@@ -24,8 +24,8 @@ class Listener(tweepy.StreamListener):
         self.delout  = open('delete.txt', 'a')
 
     def on_data(self, data):
-        self.print_data(data)
 
+        self.print_data(data)
 
         if  'in_reply_to_status' in data:
             self.on_status(data)
@@ -42,10 +42,9 @@ class Listener(tweepy.StreamListener):
             return false
 
     def on_status(self, status):
+
         self.output.write(status + "\n")
-
         self.counter += 1
-
         if self.counter >= 20000:
             self.output.close()
             self.output = open('../streaming_data/' + self.fprefix + '.' 
@@ -54,27 +53,31 @@ class Listener(tweepy.StreamListener):
         return
 
     def on_delete(self, status_id, user_id):
+
         self.delout.write( str(status_id) + "\n")
         return
 
     def on_limit(self, track):
+
         sys.stderr.write(track + "\n")
         return
 
     def on_error(self, status_code):
+
         sys.stderr.write('Error: ' + str(status_code) + "\n")
         return False
 
     def on_timeout(self):
+
         sys.stderr.write("Timeout, sleeping for 60 seconds...\n")
         time.sleep(60)
         return
 
     def print_data(self, data):
+
         # Twitter returns data in JSON format - we need to decode it first
         decoded = json.loads(data)
 
         # Also, we convert UTF-8 to ASCII ignoring all bad characters sent by users
-        print '@%s: %s' % (decoded['user']['screen_name'], decoded['text'].encode('ascii', 'ignore'))
-        print ''
-        return
+        print('@%s: %s' % (decoded['user']['screen_name'], decoded['text'].encode('ascii', 'ignore')))
+        print('')
